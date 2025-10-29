@@ -1,7 +1,7 @@
-<div class="entry" [class]="depthClass">
+<div class="entry" [style.margin-left]="marginLeft">
   <!-- Заголовок записи -->
   <div class="entry-header">
-    <!-- Кнопка раскрытия/сворачивания (только если есть подзаписи) -->
+    <!-- Кнопка раскрытия/сворачивания -->
     <button
       *ngIf="entry.entries.length > 0"
       (click)="toggleExpand()"
@@ -21,9 +21,8 @@
 
     <!-- Действия -->
     <div class="entry-actions">
-      <!-- Кнопка добавления подзаписи -->
+      <!-- Кнопка добавления подзаписи - ВСЕГДА ВИДИМА -->
       <button
-        *ngIf="canAddSubEntry"
         (click)="addSubEntry()"
         class="btn btn-primary"
         title="Добавить подзапись">
@@ -45,7 +44,7 @@
     </div>
   </div>
 
-  <!-- Вложенные записи (показываются только если раскрыто) -->
+  <!-- Вложенные записи -->
   <div
     *ngIf="entry.entries.length > 0 && entry.isExpanded"
     class="sub-entries">
@@ -54,10 +53,7 @@
     <div class="sub-entries-info">
       <span class="sub-count">
         📁 Подзаписей: {{ entry.entries.length }}
-        <span *ngIf="depth < maxDepth - 1">(можно добавить еще)</span>
-        <span *ngIf="depth >= maxDepth - 1" class="depth-warning">
-          ⚠️ Максимальная глубина
-        </span>
+        <span>(можно добавить еще)</span>
       </span>
     </div>
 
@@ -69,7 +65,6 @@
       <app-entry
         [entry]="subEntry"
         [depth]="depth + 1"
-        [maxDepth]="maxDepth"
         (entryChanged)="onSubEntryChanged()"
         (entryDeleted)="onSubEntryDeleted($event)">
       </app-entry>
@@ -82,7 +77,6 @@
     class="no-sub-entries">
     <p>Нет подзаписей</p>
     <button
-      *ngIf="canAddSubEntry"
       (click)="addSubEntry()"
       class="btn btn-secondary">
       ➕ Создать первую подзапись

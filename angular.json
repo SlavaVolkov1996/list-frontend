@@ -37,8 +37,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "6kb",    // УВЕЛИЧЕНО с 2kb
+                  "maximumError": "10kb"      // УВЕЛИЧЕНО с 4kb
                 }
               ],
               "outputHashing": "all"

@@ -6,3 +6,5 @@ README.md
 .env
 .angular
 dist
+*.md
+.editorconfig

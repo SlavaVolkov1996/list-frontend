@@ -4,12 +4,12 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
-import { EntryComponent } from './entry/entry.component'; // Добавляем новый компонент
+import { EntryComponent } from './entry/entry.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    EntryComponent  // Регистрируем рекурсивный компонент
+    EntryComponent
   ],
   imports: [
     BrowserModule,
