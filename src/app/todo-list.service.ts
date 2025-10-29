@@ -1,38 +1,59 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Entry } from './models/entry';
+import { Observable, tap } from 'rxjs';
+import { Entry, createEmptyEntry } from './models/entry';
 import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TodoListService {
-  private apiUrl = environment.apiUrl;
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
-  // Получить все записи с бэкенда
   getEntries(): Observable<Entry[]> {
-    return this.http.get<Entry[]>(`${this.apiUrl}/api/entries/`);
+    console.log('Запрос данных с бэкенда...');
+    return this.http.get<Entry[]>(`${this.baseUrl}/api/entries/`).pipe(
+      tap(entries => console.log('Получены данные:', entries))
+    );
   }
 
-  // Сохранить записи на бэкенд
   saveEntries(entries: Entry[]): Observable<any> {
-    return this.http.post(`${this.apiUrl}/api/save_entries/`, entries);
+    console.log('Сохранение данных на бэкенд...', entries);
+    return this.http.post(`${this.baseUrl}/api/save_entries/`, entries).pipe(
+      tap(() => console.log('Данные успешно сохранены'))
+    );
   }
 
-  // Добавить новую запись (локально, без сохранения на сервер)
+  // ИСПРАВЛЕННЫЙ МЕТОД - используем createEmptyEntry
   addNewEntry(entries: Entry[]): Entry[] {
-    const newEntry: Entry = {
-      title: 'Новая запись',
-      entries: []
-    };
+    const newEntry = createEmptyEntry('Новая запись');
     return [...entries, newEntry];
   }
 
-  // Удалить запись по индексу (локально)
   removeEntry(entries: Entry[], index: number): Entry[] {
     return entries.filter((_, i) => i !== index);
+  }
+
+  findEntryByTitle(entries: Entry[], title: string): Entry | null {
+    for (const entry of entries) {
+      if (entry.title === title) {
+        return entry;
+      }
+      if (entry.entries.length > 0) {
+        const found = this.findEntryByTitle(entry.entries, title);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  countTotalEntries(entries: Entry[]): number {
+    let count = 0;
+    for (const entry of entries) {
+      count += 1 + this.countTotalEntries(entry.entries);
+    }
+    return count;
   }
 }
