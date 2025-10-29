@@ -4,15 +4,17 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
+import { EntryComponent } from './entry/entry.component'; // Добавляем новый компонент
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    EntryComponent  // Регистрируем рекурсивный компонент
   ],
   imports: [
     BrowserModule,
-    HttpClientModule,    // Для HTTP запросов к бэкенду
-    FormsModule          // Для работы с формами
+    HttpClientModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

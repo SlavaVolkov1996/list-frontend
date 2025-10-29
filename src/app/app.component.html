@@ -1,1 +1,84 @@
-<app-todo-list></app-todo-list>
+<div class="container">
+  <!-- Заголовок и управление -->
+  <header class="app-header">
+    <h1>🌳 Древовидный Список Задач</h1>
+    <p class="subtitle">Неограниченная вложенность и структурирование</p>
+
+    <div class="controls">
+      <button (click)="addEntry()" class="btn btn-primary" [disabled]="loading">
+        🌱 Добавить корневую запись
+      </button>
+      <button (click)="saveEntries()" class="btn btn-success" [disabled]="loading">
+        💾 Сохранить все
+      </button>
+      <button (click)="loadEntries()" class="btn btn-secondary" [disabled]="loading">
+        🔄 Обновить
+      </button>
+      <button (click)="loadSampleData()" class="btn btn-info" [disabled]="loading">
+        📋 Пример структуры
+      </button>
+      <button (click)="exportStructure()" class="btn btn-warning">
+        📊 Экспорт структуры
+      </button>
+    </div>
+  </header>
+
+  <!-- Сообщения -->
+  <div *ngIf="error" class="message error">
+    ❌ {{ error }}
+    <button (click)="error = null" class="close-btn">×</button>
+  </div>
+
+  <div *ngIf="successMessage" class="message success"
+       [class.warning]="successMessage.includes('⚠️')">
+    {{ successMessage }}
+    <button (click)="successMessage = null" class="close-btn">×</button>
+  </div>
+
+  <!-- Индикатор загрузки -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <span>Загрузка древовидной структуры...</span>
+  </div>
+
+  <!-- Основной список -->
+  <div class="entries-container">
+    <div *ngIf="entries.length === 0 && !loading" class="empty-state">
+      <h3>🌲 Дерево задач пусто</h3>
+      <p>Создайте корневую запись чтобы начать строить свою структуру</p>
+      <button (click)="addEntry()" class="btn btn-primary">
+        🌱 Создать первую запись
+      </button>
+    </div>
+
+    <!-- Рекурсивное отображение записей -->
+    <div *ngFor="let entry of entries" class="root-entry">
+      <app-entry
+        [entry]="entry"
+        [depth]="0"
+        [maxDepth]="maxDepth"
+        (entryChanged)="onEntriesChange()"
+        (entryDeleted)="removeEntry($event)">
+      </app-entry>
+    </div>
+  </div>
+
+  <!-- Статистика -->
+  <footer class="app-footer">
+    <div class="stats">
+      <div class="stat-item">
+        <strong>Всего записей:</strong> {{ countTotalEntries(entries) }}
+      </div>
+      <div class="stat-item">
+        <strong>Глубина вложенности:</strong> {{ getMaxDepth(entries) }}/{{ maxDepth }}
+      </div>
+      <div class="stat-item">
+        <strong>Корневых записей:</strong> {{ entries.length }}
+      </div>
+    </div>
+
+    <div class="depth-info">
+      💡 <strong>Совет:</strong> Используйте кнопку "➕ Вложить" для создания подзадач любой глубины
+    </div>
+  </footer>
+</div>
