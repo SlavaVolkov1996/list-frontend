@@ -9,47 +9,40 @@ import { Entry, createEmptyEntry } from '../models/entry';
 export class EntryComponent {
   @Input() entry!: Entry;
   @Input() depth: number = 0;
-  @Input() maxDepth: number = 10; // Максимальная глубина для UI ограничений
   @Output() entryChanged = new EventEmitter<void>();
   @Output() entryDeleted = new EventEmitter<string>();
 
-  // Добавить подзапись
+  // УБРАЛИ ПРОВЕРКУ ГЛУБИНЫ - можно добавлять бесконечно
   addSubEntry(): void {
-    if (this.depth < this.maxDepth) {
-      this.entry.entries.push(createEmptyEntry('Новая подзапись'));
-      this.entry.isExpanded = true; // Автоматически раскрываем при добавлении
-      this.entryChanged.emit();
-    }
+    this.entry.entries.push(createEmptyEntry('Новая подзапись'));
+    this.entry.isExpanded = true;
+    this.entryChanged.emit();
   }
 
-  // Удалить эту запись
   deleteEntry(): void {
     this.entryDeleted.emit(this.entry.id);
   }
 
-  // Удалить подзапись
   onSubEntryDeleted(subEntryId: string): void {
     this.entry.entries = this.entry.entries.filter(e => e.id !== subEntryId);
     this.entryChanged.emit();
   }
 
-  // Переключить раскрытие/сворачивание
   toggleExpand(): void {
     this.entry.isExpanded = !this.entry.isExpanded;
   }
 
-  // Обработчик изменения подзаписи
   onSubEntryChanged(): void {
     this.entryChanged.emit();
   }
 
-  // Можно ли добавить еще подзаписи (ограничение по глубине)
+  // ВСЕГДА МОЖНО ДОБАВЛЯТЬ ПОДЗАПИСИ
   get canAddSubEntry(): boolean {
-    return this.depth < this.maxDepth;
+    return true;
   }
 
-  // CSS класс для отступа в зависимости от глубины
-  get depthClass(): string {
-    return `depth-${this.depth}`;
+  // Динамический отступ вместо классов
+  get marginLeft(): string {
+    return (this.depth * 25) + 'px';
   }
 }

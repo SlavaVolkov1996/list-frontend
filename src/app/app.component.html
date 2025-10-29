@@ -17,9 +17,6 @@
       <button (click)="loadSampleData()" class="btn btn-info" [disabled]="loading">
         📋 Пример структуры
       </button>
-      <button (click)="exportStructure()" class="btn btn-warning">
-        📊 Экспорт структуры
-      </button>
     </div>
   </header>
 
@@ -29,8 +26,7 @@
     <button (click)="error = null" class="close-btn">×</button>
   </div>
 
-  <div *ngIf="successMessage" class="message success"
-       [class.warning]="successMessage.includes('⚠️')">
+  <div *ngIf="successMessage" class="message success">
     {{ successMessage }}
     <button (click)="successMessage = null" class="close-btn">×</button>
   </div>
@@ -38,7 +34,7 @@
   <!-- Индикатор загрузки -->
   <div *ngIf="loading" class="loading">
     <div class="spinner"></div>
-    <span>Загрузка древовидной структуры...</span>
+    <span>Загрузка...</span>
   </div>
 
   <!-- Основной список -->
@@ -56,29 +52,33 @@
       <app-entry
         [entry]="entry"
         [depth]="0"
-        [maxDepth]="maxDepth"
         (entryChanged)="onEntriesChange()"
         (entryDeleted)="removeEntry($event)">
       </app-entry>
     </div>
   </div>
 
-  <!-- Статистика -->
+  <!-- Статистика - УЛУЧШЕННАЯ ВИДИМОСТЬ -->
   <footer class="app-footer">
-    <div class="stats">
-      <div class="stat-item">
-        <strong>Всего записей:</strong> {{ countTotalEntries(entries) }}
-      </div>
-      <div class="stat-item">
-        <strong>Глубина вложенности:</strong> {{ getMaxDepth(entries) }}/{{ maxDepth }}
-      </div>
-      <div class="stat-item">
-        <strong>Корневых записей:</strong> {{ entries.length }}
+    <div class="stats-panel">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number">{{ countTotalEntries(entries) }}</div>
+          <div class="stat-label">Всего записей</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{ getMaxDepth(entries) }}</div>
+          <div class="stat-label">Глубина вложенности</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{ entries.length }}</div>
+          <div class="stat-label">Корневых записей</div>
+        </div>
       </div>
     </div>
 
-    <div class="depth-info">
-      💡 <strong>Совет:</strong> Используйте кнопку "➕ Вложить" для создания подзадач любой глубины
+    <div class="help-tip">
+      💡 <strong>Совет:</strong> Нажимайте "➕ Вложить" для создания подзадач любой глубины - ограничений нет!
     </div>
   </footer>
 </div>

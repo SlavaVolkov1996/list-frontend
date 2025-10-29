@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Entry, createEmptyEntry, getMaxDepth, removeEntryById } from './models/entry';
+import { Entry, createEmptyEntry } from './models/entry';
 import { TodoListService } from './todo-list.service';
 
 @Component({
@@ -12,7 +12,6 @@ export class AppComponent implements OnInit {
   loading = false;
   error: string | null = null;
   successMessage: string | null = null;
-  maxDepth = 10;
 
   constructor(private todoService: TodoListService) {}
 
@@ -29,8 +28,7 @@ export class AppComponent implements OnInit {
         this.entries = this.addMissingIds(data);
         this.loading = false;
         const totalEntries = this.countTotalEntries(this.entries);
-        const currentDepth = this.getMaxDepth(this.entries);
-        this.successMessage = `Загружено ${totalEntries} записей (глубина: ${currentDepth})`;
+        this.successMessage = `Загружено ${totalEntries} записей`;
 
         setTimeout(() => this.successMessage = null, 5000);
       },
@@ -50,8 +48,7 @@ export class AppComponent implements OnInit {
       next: () => {
         this.loading = false;
         const totalEntries = this.countTotalEntries(this.entries);
-        const currentDepth = this.getMaxDepth(this.entries);
-        this.successMessage = `✅ Сохранено ${totalEntries} записей (глубина: ${currentDepth})`;
+        this.successMessage = `✅ Сохранено ${totalEntries} записей`;
         setTimeout(() => this.successMessage = null, 5000);
       },
       error: (err) => {
@@ -73,20 +70,10 @@ export class AppComponent implements OnInit {
   }
 
   onEntriesChange() {
-    const totalEntries = this.countTotalEntries(this.entries);
-    const currentDepth = this.getMaxDepth(this.entries);
-
-    if (currentDepth >= this.maxDepth - 2) {
-      this.successMessage = `⚠️ Текущая глубина: ${currentDepth}. Максимальная: ${this.maxDepth}`;
-      setTimeout(() => {
-        if (this.successMessage?.includes('⚠️')) {
-          this.successMessage = null;
-        }
-      }, 3000);
-    }
+    // Убрали проверки на глубину
   }
 
-  // ДОБАВЛЕННЫЙ МЕТОД - был отсутствует
+  // УПРОЩЕННЫЙ МЕТОД - без ограничений глубины
   getMaxDepth(entries: Entry[]): number {
     if (entries.length === 0) return 0;
 
@@ -128,6 +115,7 @@ export class AppComponent implements OnInit {
   }
 
   loadSampleData() {
+    // Пример с глубокой вложенностью
     this.entries = [
       {
         id: this.generateId(),
@@ -144,12 +132,19 @@ export class AppComponent implements OnInit {
                   {
                     id: this.generateId(),
                     title: 'Анализ требований',
-                    entries: []
-                  },
-                  {
-                    id: this.generateId(),
-                    title: 'Прототипирование',
-                    entries: []
+                    entries: [
+                      {
+                        id: this.generateId(),
+                        title: 'Сбор информации',
+                        entries: [
+                          {
+                            id: this.generateId(),
+                            title: 'Интервью с заказчиком',
+                            entries: []
+                          }
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
@@ -159,11 +154,10 @@ export class AppComponent implements OnInit {
         isExpanded: true
       }
     ];
-    this.successMessage = 'Загружен пример структуры';
+    this.successMessage = 'Загружен пример глубокой структуры';
     setTimeout(() => this.successMessage = null, 3000);
   }
 
-  // Вспомогательная функция для генерации ID
   private generateId(): string {
     return 'entry_' + Math.random().toString(36).substr(2, 9);
   }

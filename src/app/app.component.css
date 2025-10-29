@@ -1,77 +1,102 @@
 /* Добавим в существующие стили */
 
-/* Контейнер корневых записей */
-.root-entry {
-  margin-bottom: 25px;
-}
-
-/* Статистика в футере */
-.stats {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-bottom: 20px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+/* Панель статистики */
+.stats-panel {
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.stat-item {
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-number {
+  font-size: 2.5em;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.stat-label {
+  font-size: 0.9em;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.help-tip {
   text-align: center;
   color: white;
-  font-size: 14px;
-}
-
-.stat-item strong {
-  display: block;
-  font-size: 16px;
-  margin-bottom: 5px;
-  color: #e3f2fd;
-}
-
-.depth-info {
-  text-align: center;
-  color: #e3f2fd;
   font-size: 14px;
   padding: 15px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  border-left: 4px solid #4CAF50;
-}
-
-/* Новые классы для кнопок */
-.btn-info {
-  background-color: #17a2b8;
-  color: white;
-}
-
-.btn-warning {
-  background-color: #ffc107;
-  color: #212529;
-}
-
-.btn-info:hover, .btn-warning:hover {
-  opacity: 0.9;
-  transform: translateY(-2px);
-}
-
-/* Сообщение-предупреждение */
-.message.warning {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* Адаптивность статистики */
 @media (max-width: 768px) {
-  .stats {
-    flex-direction: column;
-    gap: 10px;
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
   }
 
-  .stat-item {
-    text-align: left;
+  .stat-card {
+    padding: 15px;
   }
+
+  .stat-number {
+    font-size: 2em;
+  }
+}
+
+/* Улучшаем видимость сообщений */
+.message {
+  padding: 15px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: slideIn 0.3s ease;
+  font-weight: 500;
+}
+
+.message.error {
+  background: #ffebee;
+  color: #c62828;
+  border: 2px solid #ffcdd2;
+}
+
+.message.success {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border: 2px solid #c8e6c9;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
