@@ -12,15 +12,36 @@ export class EntryComponent {
   @Output() entryChanged = new EventEmitter<void>();
   @Output() entryDeleted = new EventEmitter<string>();
 
-  // УБРАЛИ ПРОВЕРКУ ГЛУБИНЫ - можно добавлять бесконечно
+  // Добавление подзаписи
   addSubEntry(): void {
-    this.entry.entries.push(createEmptyEntry('Новая подзапись'));
+    const newEntry = createEmptyEntry('Новая подзапись');
+    this.entry.entries.push(newEntry);
     this.entry.isExpanded = true;
     this.entryChanged.emit();
   }
 
+  // Удаление с подтверждением
   deleteEntry(): void {
-    this.entryDeleted.emit(this.entry.id);
+    const entryName = this.entry.title || 'безымянная запись';
+    const subEntriesCount = this.countSubEntries(this.entry);
+
+    let message = `Удалить запись "${entryName}"?`;
+    if (subEntriesCount > 0) {
+      message += `\nБудет также удалено ${subEntriesCount} вложенных записей.`;
+    }
+
+    if (confirm(message)) {
+      this.entryDeleted.emit(this.entry.id);
+    }
+  }
+
+  // Подсчет всех вложенных записей
+  private countSubEntries(entry: Entry): number {
+    let count = 0;
+    for (const subEntry of entry.entries) {
+      count += 1 + this.countSubEntries(subEntry);
+    }
+    return count;
   }
 
   onSubEntryDeleted(subEntryId: string): void {
@@ -36,13 +57,8 @@ export class EntryComponent {
     this.entryChanged.emit();
   }
 
-  // ВСЕГДА МОЖНО ДОБАВЛЯТЬ ПОДЗАПИСИ
-  get canAddSubEntry(): boolean {
-    return true;
-  }
-
-  // Динамический отступ вместо классов
+  // Компактный отступ
   get marginLeft(): string {
-    return (this.depth * 25) + 'px';
+    return (this.depth * 15) + 'px';
   }
 }

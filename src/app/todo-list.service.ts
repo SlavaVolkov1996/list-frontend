@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { Entry, createEmptyEntry } from './models/entry';
+import { Entry, createEmptyEntry, removeEntryById } from './models/entry';
 import { environment } from '../environments/environment';
 
 @Injectable({
@@ -13,47 +13,43 @@ export class TodoListService {
   constructor(private http: HttpClient) {}
 
   getEntries(): Observable<Entry[]> {
-    console.log('Запрос данных с бэкенда...');
-    return this.http.get<Entry[]>(`${this.baseUrl}/api/entries/`).pipe(
-      tap(entries => console.log('Получены данные:', entries))
-    );
+    return this.http.get<Entry[]>(`${this.baseUrl}/api/entries/`);
   }
 
   saveEntries(entries: Entry[]): Observable<any> {
-    console.log('Сохранение данных на бэкенд...', entries);
-    return this.http.post(`${this.baseUrl}/api/save_entries/`, entries).pipe(
-      tap(() => console.log('Данные успешно сохранены'))
-    );
+    return this.http.post(`${this.baseUrl}/api/save_entries/`, entries);
   }
 
-  // ИСПРАВЛЕННЫЙ МЕТОД - используем createEmptyEntry
-  addNewEntry(entries: Entry[]): Entry[] {
-    const newEntry = createEmptyEntry('Новая запись');
-    return [...entries, newEntry];
+  // НОВЫЙ МЕТОД: Удаление отдельной записи на сервере
+  deleteEntry(entryId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/api/delete_entry/${entryId}`);
   }
 
-  removeEntry(entries: Entry[], index: number): Entry[] {
-    return entries.filter((_, i) => i !== index);
+  // НОВЫЙ МЕТОД: Очистка orphaned файлов
+  cleanupOrphaned(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/api/cleanup_orphaned/`, {});
   }
 
-  findEntryByTitle(entries: Entry[], title: string): Entry | null {
-    for (const entry of entries) {
-      if (entry.title === title) {
-        return entry;
-      }
-      if (entry.entries.length > 0) {
-        const found = this.findEntryByTitle(entry.entries, title);
-        if (found) return found;
-      }
-    }
-    return null;
+  // Улучшенное удаление записи (локальное + серверное)
+  removeEntry(entries: Entry[], entryId: string): Entry[] {
+    const result = removeEntryById(entries, entryId);
+
+    // Также удаляем на сервере
+    this.deleteEntry(entryId).subscribe({
+      next: () => console.log(`Запись ${entryId} удалена на сервере`),
+      error: (err) => console.error('Ошибка удаления на сервере:', err)
+    });
+
+    return result.updatedEntries;
   }
 
-  countTotalEntries(entries: Entry[]): number {
-    let count = 0;
-    for (const entry of entries) {
-      count += 1 + this.countTotalEntries(entry.entries);
-    }
-    return count;
+  // Удаление всех пустых записей
+  removeEmptyEntries(entries: Entry[]): Entry[] {
+    return entries
+      .filter(entry => entry.title.trim() !== '')
+      .map(entry => ({
+        ...entry,
+        entries: this.removeEmptyEntries(entry.entries)
+      }));
   }
 }
