@@ -1,26 +1,33 @@
 <div class="container">
   <!-- Заголовок и управление -->
   <header class="app-header">
-    <h1>🌳 Древовидный Список Задач</h1>
-    <p class="subtitle">Неограниченная вложенность и структурирование</p>
+    <h1>📝 Улучшенный список задач</h1>
+    <p class="subtitle">С синхронизацией удаления на сервере</p>
 
-    <!-- ПОДСКАЗКА ПЕРЕМЕЩЕНА СЮДА - перед кнопками -->
-    <div class="help-tip prominent">
-      💡 <strong>Совет:</strong> Нажимайте "➕ Вложить" для создания подзадач любой глубины - ограничений нет!
+    <!-- Компактная подсказка -->
+    <div class="help-tip">
+      💡 Удаление записей теперь синхронизируется с сервером и файлами
     </div>
 
     <div class="controls">
       <button (click)="addEntry()" class="btn btn-primary" [disabled]="loading">
-        🌱 Добавить корневую запись
+        + Добавить
       </button>
       <button (click)="saveEntries()" class="btn btn-success" [disabled]="loading">
-        💾 Сохранить все
+        💾 Сохранить
       </button>
       <button (click)="loadEntries()" class="btn btn-secondary" [disabled]="loading">
-        🔄 Обновить
+        🔄 Загрузить
       </button>
-      <button (click)="loadSampleData()" class="btn btn-info" [disabled]="loading">
-        📋 Пример структуры
+      <button (click)="removeEmpty()" class="btn btn-warning" [disabled]="loading">
+        🧹 Очистить пустые
+      </button>
+      <!-- НОВАЯ КНОПКА: Очистка orphaned файлов -->
+      <button (click)="cleanupOrphaned()" class="btn btn-info" [disabled]="loading">
+        🗂️ Очистить файлы
+      </button>
+      <button (click)="confirmClearAll()" class="btn btn-danger" [disabled]="loading">
+        🗑️ Удалить все
       </button>
     </div>
   </header>
@@ -45,10 +52,10 @@
   <!-- Основной список -->
   <div class="entries-container">
     <div *ngIf="entries.length === 0 && !loading" class="empty-state">
-      <h3>🌲 Дерево задач пусто</h3>
-      <p>Создайте корневую запись чтобы начать строить свою структуру</p>
+      <h3>📭 Список пуст</h3>
+      <p>Начните с создания первой записи</p>
       <button (click)="addEntry()" class="btn btn-primary">
-        🌱 Создать первую запись
+        + Создать запись
       </button>
     </div>
 
@@ -73,7 +80,7 @@
         </div>
         <div class="stat-card">
           <div class="stat-number">{{ getMaxDepth(entries) }}</div>
-          <div class="stat-label">Глубина вложенности</div>
+          <div class="stat-label">Уровней вложенности</div>
         </div>
         <div class="stat-card">
           <div class="stat-number">{{ entries.length }}</div>

@@ -22,15 +22,11 @@ export class AppComponent implements OnInit {
   loadEntries() {
     this.loading = true;
     this.error = null;
-
     this.todoService.getEntries().subscribe({
       next: (data) => {
         this.entries = this.addMissingIds(data);
         this.loading = false;
-        const totalEntries = this.countTotalEntries(this.entries);
-        this.successMessage = `Загружено ${totalEntries} записей`;
-
-        setTimeout(() => this.successMessage = null, 5000);
+        this.showSuccess(`Загружено ${this.countTotalEntries(this.entries)} записей`);
       },
       error: (err) => {
         this.error = 'Ошибка загрузки данных с сервера';
@@ -43,13 +39,10 @@ export class AppComponent implements OnInit {
   saveEntries() {
     this.loading = true;
     this.error = null;
-
     this.todoService.saveEntries(this.entries).subscribe({
-      next: () => {
+      next: (response: any) => {
         this.loading = false;
-        const totalEntries = this.countTotalEntries(this.entries);
-        this.successMessage = `✅ Сохранено ${totalEntries} записей`;
-        setTimeout(() => this.successMessage = null, 5000);
+        this.showSuccess(`✅ ${response.message || 'Данные сохранены'}`);
       },
       error: (err) => {
         this.error = 'Ошибка сохранения данных';
@@ -61,22 +54,65 @@ export class AppComponent implements OnInit {
 
   addEntry() {
     this.entries.push(createEmptyEntry());
-    this.onEntriesChange();
   }
 
+  // УЛУЧШЕННОЕ УДАЛЕНИЕ - локальное и на сервере
   removeEntry(entryId: string) {
-    this.entries = this.entries.filter(entry => entry.id !== entryId);
-    this.onEntriesChange();
+    this.entries = this.todoService.removeEntry(this.entries, entryId);
+    this.showSuccess('Запись удалена');
+  }
+
+  // Массовое удаление пустых записей
+  removeEmpty() {
+    const beforeCount = this.countTotalEntries(this.entries);
+    this.entries = this.todoService.removeEmptyEntries(this.entries);
+    const afterCount = this.countTotalEntries(this.entries);
+    const removedCount = beforeCount - afterCount;
+
+    if (removedCount > 0) {
+      this.showSuccess(`Удалено ${removedCount} пустых записей`);
+      // Сохраняем изменения на сервере
+      this.saveEntries();
+    } else {
+      this.showSuccess('Пустые записи не найдены');
+    }
+  }
+
+  // Очистка orphaned файлов на сервере
+  cleanupOrphaned() {
+    this.todoService.cleanupOrphaned().subscribe({
+      next: (response: any) => {
+        this.showSuccess(`✅ ${response.message || 'Orphaned файлы очищены'}`);
+      },
+      error: (err) => {
+        this.error = 'Ошибка очистки orphaned файлов';
+        console.error('Ошибка:', err);
+      }
+    });
+  }
+
+  // Подтверждение удаления всех записей
+  confirmClearAll() {
+    if (confirm('Вы уверены, что хотите удалить ВСЕ записи? Это действие нельзя отменить.')) {
+      this.entries = [];
+      this.showSuccess('Все записи удалены');
+      // Сохраняем пустой список на сервере
+      this.saveEntries();
+    }
   }
 
   onEntriesChange() {
-    // Убрали проверки на глубину
+    // Автосохранение при изменении (опционально)
+    // this.saveEntries();
   }
 
-  // УПРОЩЕННЫЙ МЕТОД - без ограничений глубины
+  private showSuccess(message: string) {
+    this.successMessage = message;
+    setTimeout(() => this.successMessage = null, 3000);
+  }
+
   getMaxDepth(entries: Entry[]): number {
     if (entries.length === 0) return 0;
-
     let maxDepth = 0;
     for (const entry of entries) {
       const depth = 1 + this.getMaxDepth(entry.entries);
@@ -95,67 +131,13 @@ export class AppComponent implements OnInit {
 
   private addMissingIds(entries: Entry[]): Entry[] {
     return entries.map(entry => {
-      if (!entry.id) {
-        entry.id = this.generateId();
-      }
-      if (entry.entries && entry.entries.length > 0) {
+      if (!entry.id) entry.id = this.generateId();
+      if (entry.entries?.length > 0) {
         entry.entries = this.addMissingIds(entry.entries);
       }
-      if (entry.isExpanded === undefined) {
-        entry.isExpanded = true;
-      }
+      if (entry.isExpanded === undefined) entry.isExpanded = true;
       return entry;
     });
-  }
-
-  exportStructure() {
-    console.log('Структура записей:', JSON.stringify(this.entries, null, 2));
-    this.successMessage = 'Структура экспортирована в консоль';
-    setTimeout(() => this.successMessage = null, 3000);
-  }
-
-  loadSampleData() {
-    // Пример с глубокой вложенностью
-    this.entries = [
-      {
-        id: this.generateId(),
-        title: 'Главный проект',
-        entries: [
-          {
-            id: this.generateId(),
-            title: 'Фаза 1',
-            entries: [
-              {
-                id: this.generateId(),
-                title: 'Исследование',
-                entries: [
-                  {
-                    id: this.generateId(),
-                    title: 'Анализ требований',
-                    entries: [
-                      {
-                        id: this.generateId(),
-                        title: 'Сбор информации',
-                        entries: [
-                          {
-                            id: this.generateId(),
-                            title: 'Интервью с заказчиком',
-                            entries: []
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ],
-        isExpanded: true
-      }
-    ];
-    this.successMessage = 'Загружен пример глубокой структуры';
-    setTimeout(() => this.successMessage = null, 3000);
   }
 
   private generateId(): string {
